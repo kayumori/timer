@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ジャーナリングタイマー</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            transition: background 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: 20px;
+        }
+
+        .timer-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            box-shadow: 
+                0 0 0 1px rgba(255, 255, 255, 0.5),
+                0 2px 16px rgba(0, 0, 0, 0.04),
+                0 8px 32px rgba(0, 0, 0, 0.08);
+            width: 280px;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .time-selector {
+            margin-bottom: 40px;
+        }
+
+        .time-selector label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .time-input {
+            width: 120px;
+            padding: 12px 16px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            color: #1e293b;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .timer-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(#6366f1 0deg, rgba(148, 163, 184, 0.15) 0deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 40px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .timer-inner {
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                inset 0 2px 8px rgba(0, 0, 0, 0.04),
+                0 1px 2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .time-display {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e293b;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.025em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        button {
+            padding: 16px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #475569;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            font-family: inherit;
+            letter-spacing: -0.025em;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.12),
+                0 1px 3px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.16),
+                0 2px 6px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.14),
+                0 1px 3px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .status {
+            color: #64748b;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        .phase-indicator {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .completed {
+            animation: gentle-pulse 2s infinite;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.95; }
+        }
+
+        .running .timer-circle {
+            box-shadow: 0 0 32px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Remove discrete phase classes for smooth transitions */
+    </style>
+</head>
+<body>
+    <div class="timer-container" id="timerContainer">
+        <div class="header">
+            <div class="title">ジャーナリングタイマー</div>
+            <div class="subtitle">心を整える時間</div>
+        </div>
+
+        <div class="time-selector">
+            <label for="timeInput">時間設定（分）</label>
+            <input type="number" id="timeInput" class="time-input" value="10" min="1" max="60" onchange="updateTimeSettings()">
+        </div>
+        
+        <div class="timer-circle" id="timerCircle">
+            <div class="timer-inner">
+                <div class="time-display" id="timeDisplay">10:00</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" onclick="startTimer()">スタート</button>
+            <button id="stopBtn" onclick="stopTimer()">ストップ</button>
+            <button id="resetBtn" onclick="resetTimer()">リセット</button>
+        </div>
+        
+        <div class="footer">
+            <div class="status" id="status">準備完了</div>
+            <div class="phase-indicator" id="phaseIndicator">深呼吸をして準備を整えましょう</div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let timeRemaining = 600; // デフォルト10分
+        let isRunning = false;
+        let totalTime = 600;
+
+        const timeDisplay = document.getElementById('timeDisplay');
+        const timerCircle = document.getElementById('timerCircle');
+        const status = document.getElementById('status');
+        const phaseIndicator = document.getElementById('phaseIndicator');
+        const body = document.body;
+        const timerContainer = document.getElementById('timerContainer');
+        const timeInput = document.getElementById('timeInput');
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimeSettings() {
+            if (!isRunning) {
+                const minutes = parseInt(timeInput.value) || 10;
+                totalTime = minutes * 60;
+                timeRemaining = totalTime;
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            timeDisplay.textContent = formatTime(timeRemaining);
+            
+            // プログレスサークルの更新
+            const progress = ((totalTime - timeRemaining) / totalTime) * 360;
+            const remainingDegrees = 360 - progress;
+            timerCircle.style.background = `conic-gradient(#6366f1 ${progress}deg, rgba(148, 163, 184, 0.15) ${progress}deg)`;
+            
+            // 背景とフェーズの更新
+            updatePhase();
+        }
+
+        function updatePhase() {
+            const progress = (totalTime - timeRemaining) / totalTime;
+            
+            // 自然な色のグラデーション変化
+            updateBackgroundGradient(progress);
+            
+            // フェーズメッセージの更新
+            if (progress < 0.25) {
+                phaseIndicator.textContent = "心を静めて、思考を整理しましょう";
+            } else if (progress < 0.5) {
+                phaseIndicator.textContent = "自由に思考を流れるままに表現してください";
+            } else if (progress < 0.75) {
+                phaseIndicator.textContent = "深い洞察や気づきを大切に記録しましょう";
+            } else if (progress < 1) {
+                phaseIndicator.textContent = "もうすぐ完了です。最後の思考をまとめましょう";
+            }
+        }
+
+        function updateBackgroundGradient(progress) {
+            // より自然で滑らかな色変化
+            let topColor, bottomColor;
+            
+            if (progress <= 0.33) {
+                // 初期段階: 涼しいグレーから薄い青へ
+                const localProgress = progress / 0.33;
+                topColor = interpolateColor('#f8fafc', '#f0f9ff', localProgress);
+                bottomColor = interpolateColor('#e2e8f0', '#e0f2fe', localProgress);
+            } else if (progress <= 0.66) {
+                // 中間段階: 青から温かいアンバーへ
+                const localProgress = (progress - 0.33) / 0.33;
+                topColor = interpolateColor('#f0f9ff', '#fffbeb', localProgress);
+                bottomColor = interpolateColor('#e0f2fe', '#fef3c7', localProgress);
+            } else {
+                // 最終段階: アンバーから穏やかなグリーンへ
+                const localProgress = (progress - 0.66) / 0.34;
+                topColor = interpolateColor('#fffbeb', '#f0fdf4', localProgress);
+                bottomColor = interpolateColor('#fef3c7', '#dcfce7', localProgress);
+            }
+            
+            body.style.background = `linear-gradient(180deg, ${topColor} 0%, ${bottomColor} 100%)`;
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            // HEXカラーを補間する関数
+            const hex1 = color1.replace('#', '');
+            const hex2 = color2.replace('#', '');
+            
+            const r1 = parseInt(hex1.substr(0, 2), 16);
+            const g1 = parseInt(hex1.substr(2, 2), 16);
+            const b1 = parseInt(hex1.substr(4, 2), 16);
+            
+            const r2 = parseInt(hex2.substr(0, 2), 16);
+            const g2 = parseInt(hex2.substr(2, 2), 16);
+            const b2 = parseInt(hex2.substr(4, 2), 16);
+            
+            const r = Math.round(r1 + (r2 - r1) * factor);
+            const g = Math.round(g1 + (g2 - g1) * factor);
+            const b = Math.round(b1 + (b2 - b1) * factor);
+            
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                status.textContent = "ジャーナリング中";
+                timerContainer.classList.add('running');
+                timeInput.disabled = true;
+                
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateDisplay();
+                    
+                    if (timeRemaining <= 0) {
+                        completeTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                status.textContent = "一時停止";
+                phaseIndicator.textContent = "再開の準備ができたらスタートを押してください";
+                timerContainer.classList.remove('running');
+            }
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            updateTimeSettings();
+            status.textContent = "準備完了";
+            phaseIndicator.textContent = "深呼吸をして準備を整えましょう";
+            body.style.background = "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)";
+            timerContainer.classList.remove('completed', 'running');
+            timeInput.disabled = false;
+        }
+
+        function completeTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            status.textContent = "完了";
+            phaseIndicator.textContent = "素晴らしいジャーナリングでした。お疲れさまでした";
+            timerContainer.classList.remove('running');
+            timerContainer.classList.add('completed');
+            timeInput.disabled = false;
+            
+            playCompletionSound();
+        }
+
+        function playCompletionSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // より洗練されたハーモニー (Am7コード)
+                const frequencies = [440, 523.25, 659.25, 783.99]; // A4, C5, E5, G5
+                
+                frequencies.forEach((freq, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    const delay = index * 0.15;
+                    const startVolume = 0.08 - (index * 0.015);
+                    
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime + delay);
+                    gainNode.gain.linearRampToValueAtTime(startVolume, audioContext.currentTime + delay + 0.2);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + delay + 2.5);
+                    
+                    oscillator.start(audioContext.currentTime + delay);
+                    oscillator.stop(audioContext.currentTime + delay + 2.5);
+                });
+            } catch (error) {
+                console.log('Audio context not available');
+            }
+        }
+
+        // 初期化
+        updateDisplay();
+    </script>
+</body>
+</html>
